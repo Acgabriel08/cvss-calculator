@@ -1,18 +1,31 @@
-# CVSS v3.1 Base Score Calculator
+# 🧮 CVSS v3.1 Base Score Calculator
 
-A simple, open-source CVSS v3.1 base score calculator implemented in vanilla JavaScript and a minimal web UI.
+An interactive **CVSS (Common Vulnerability Scoring System) v3.1 Calculator** built with HTML, CSS, and JavaScript.  
+It allows security analysts, students, and developers to quickly calculate **vulnerability base scores** using standardized CVSS metrics.
 
-## Features
-- CVSS v3.1 Base score calculation (Impact + Exploitability)
-- Client-side, no server required
-- Deployable to GitHub Pages
+🌐 **Live Demo:** [Launch Calculator](https://Acgabriel08.github.io/cvss-calculator/)
 
-## Usage
-Open `index.html` in your browser, choose metrics and press "Calculate".
+---
 
-## Development
-- Node.js (for tests)
-- Run tests: `npm install && npm test`
+## 📋 Features
 
-## License
-MIT
+- Calculates **Base Score**, **Impact**, and **Exploitability**  
+- Implements official **NIST CVSS v3.1 formulas**  
+- Responsive and professional interface  
+- Built entirely with **vanilla JavaScript** — no frameworks  
+- Lightweight and works offline
+
+---
+
+## 🚀 How to Use
+
+### 🖥️ Online (Live Demo)
+1. Open the link above.  
+2. Select the metrics (AV, AC, PR, UI, S, C, I, A).  
+3. Click **Calculate**.  
+4. Instantly view your **Base Score**, **Impact**, and **Exploitability**.
+
+### 💻 Locally
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/Acgabriel08/cvss-calculator.git
