@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CVSS v3.1 Base Score Calculator</title>
+  <style>
+    body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:18px;max-width:900px}
+    h1{font-size:20px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:12px}
+    label{display:block;margin-bottom:6px;font-weight:600}
+    select,input[type=button]{width:100%;padding:8px;border-radius:6px;border:1px solid #ccc}
+    .result{padding:12px;border-radius:6px;background:#f3f4f6;margin-top:12px}
+    footer{margin-top:24px;font-size:13px;color:#666}
+    .code{font-family:monospace;background:#fff;padding:8px;border-radius:6px;border:1px solid #eee;display:inline-block}
+  </style>
+</head>
+<body>
+  <h1>CVSS v3.1 Base Score Calculator — HealthSecure Lab</h1>
+  <p>Pick CVSS base metrics below and click <strong>Calculate</strong>. This implements the CVSS v3.1 base score formula.</p>
+
+  <div class="grid">
+    <div>
+      <label>Attack Vector (AV)</label>
+      <select id="AV">
+        <option value="N">Network (N)</option>
+        <option value="A">Adjacent (A)</option>
+        <option value="L">Local (L)</option>
+        <option value="P">Physical (P)</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Attack Complexity (AC)</label>
+      <select id="AC">
+        <option value="L">Low (L)</option>
+        <option value="H">High (H)</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Privileges Required (PR)</label>
+      <select id="PR">
+        <option value="N">None (N)</option>
+        <option value="L">Low (L)</option>
+        <option value="H">High (H)</option>
+      </select>
+    </div>
+
+    <div>
+      <label>User Interaction (UI)</label>
+      <select id="UI">
+        <option value="N">None (N)</option>
+        <option value="R">Required (R)</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Scope (S)</label>
+      <select id="S">
+        <option value="U">Unchanged (U)</option>
+        <option value="C">Changed (C)</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Confidentiality (C)</label>
+      <select id="C">
+        <option value="N">None (N)</option>
+        <option value="L">Low (L)</option>
+        <option value="H">High (H)</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Integrity (I)</label>
+      <select id="I">
+        <option value="N">None (N)</option>
+        <option value="L">Low (L)</option>
+        <option value="H">High (H)</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Availability (A)</label>
+      <select id="A">
+        <option value="N">None (N)</option>
+        <option value="L">Low (L)</option>
+        <option value="H">High (H)</option>
+      </select>
+    </div>
+  </div>
+
+  <input type="button" id="calc" value="Calculate CVSS Base Score" />
+  <div id="output" class="result" style="display:none;"></div>
+
+<script>
+/* CVSS v3.1 numeric mappings and calculator (base score only) */
+
+// metric weight maps
+const AV_map = {N:0.85, A:0.62, L:0.55, P:0.2};
+const AC_map = {L:0.77, H:0.44};
+const UI_map = {N:0.85, R:0.62};
+const CIA_map = {N:0.0, L:0.22, H:0.56};
+
+// PR depends on scope
+const PR_map_scopeU = {N:0.85, L:0.62, H:0.27};
+const PR_map_scopeC = {N:0.85, L:0.68, H:0.5};
+
+function roundup1(x){
+  // round up to 1 decimal place per CVSS spec
+  return Math.ceil(x*10)/10;
+}
+
+function calcBaseScore(metrics){
+  const AV = AV_map[metrics.AV];
+  const AC = AC_map[metrics.AC];
+  const UI = UI_map[metrics.UI];
+  const S = metrics.S; // 'U' or 'C'
+  const C = CIA_map[metrics.C];
+  const I = CIA_map[metrics.I];
+  const A = CIA_map[metrics.A];
+
+  const PRmap = (S === 'U') ? PR_map_scopeU : PR_map_scopeC;
+  const PR = PRmap[metrics.PR];
+
+  const impact = 1 - ((1 - C)*(1 - I)*(1 - A));
+  const impactSub = (S === 'U') ?
+      6.42 * impact :
+      7.52 * (impact - 0.029) - 3.25 * Math.pow((impact - 0.02),15);
+
+  const exploitability = 8.22 * AV * AC * PR * UI;
+
+  if (impact <= 0) {
+    return {base:0.0, impact:impact, exploitability:exploitability, impactSub:impactSub};
+  }
+
+  let base;
+  if (S === 'U') {
+    base = roundup1(Math.min(impactSub + exploitability, 10));
+  } else {
+    base = roundup1(Math.min(1.08 * (impactSub + exploitability), 10));
+  }
+  return {base:base, impact:impact, exploitability:exploitability, impactSub:impactSub};
+}
+
+// UI handler
+document.getElementById('calc').addEventListener('click', () => {
+  const metrics = {
+    AV: document.getElementById('AV').value,
+    AC: document.getElementById('AC').value,
+    PR: document.getElementById('PR').value,
+    UI: document.getElementById('UI').value,
+    S: document.getElementById('S').value,
+    C: document.getElementById('C').value,
+    I: document.getElementById('I').value,
+    A: document.getElementById('A').value
+  };
+  const res = calcBaseScore(metrics);
+  const out = document.getElementById('output');
+  out.style.display = 'block';
+  out.innerHTML = `
+    <strong>CVSS v3.1 Base Score:</strong> <span class="code">${res.base.toFixed(1)}</span><br/>
+    <strong>Impact:</strong> ${res.impact.toFixed(4)} |
+    <strong>Impact Subscore:</strong> ${res.impactSub.toFixed(4)} |
+    <strong>Exploitability:</strong> ${res.exploitability.toFixed(4)}<br/>
+    <small>Metrics: AV=${metrics.AV}, AC=${metrics.AC}, PR=${metrics.PR}, UI=${metrics.UI}, S=${metrics.S}, C=${metrics.C}, I=${metrics.I}, A=${metrics.A}</small>
+  `;
+});
+</script>
+
+<footer>
+  <p>Implements CVSS v3.1 base score formula (impact/exploitability). For education/lab use only. Reference: NIST CVSS v3.1 spec.</p>
+</footer>
+</body>
+</html>

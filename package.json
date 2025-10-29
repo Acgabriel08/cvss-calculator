@@ -1,0 +1,15 @@
+{
+  "name": "cvss-calculator",
+  "version": "1.0.0",
+  "description": "A simple CVSS v3.1 Base Score Calculator for learning cybersecurity metrics.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "Gabriel Emenike",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
