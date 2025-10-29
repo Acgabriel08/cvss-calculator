@@ -6,32 +6,23 @@
   <title>CVSS v3.1 Calculator</title>
   <style>
     body {
-      font-family: "Segoe UI", Arial, sans-serif;
-      background-color: #f4f7fb;
+      font-family: Arial, sans-serif;
+      background-color: #f5f8fb;
       text-align: center;
-      padding: 50px;
-    }
-    .container {
-      background: white;
-      max-width: 500px;
-      margin: auto;
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      margin-top: 80px;
     }
     h1 {
       color: #003366;
-      margin-bottom: 20px;
     }
     input {
-      width: 90%;
+      width: 70%;
       padding: 10px;
+      margin-top: 20px;
       border-radius: 8px;
       border: 1px solid #ccc;
-      font-size: 1em;
     }
     button {
-      margin-top: 15px;
+      margin-top: 20px;
       background-color: #003366;
       color: white;
       border: none;
@@ -44,14 +35,13 @@
       background-color: #0055aa;
     }
     .result {
-      margin-top: 25px;
-      font-size: 1.5em;
+      margin-top: 30px;
+      font-size: 1.6em;
       font-weight: bold;
+      display: inline-block;
       padding: 15px;
       border-radius: 10px;
-      display: inline-block;
       color: white;
-      min-width: 220px;
     }
     .low { background-color: #4CAF50; }
     .medium { background-color: #FFC107; color: black; }
@@ -59,21 +49,20 @@
     .critical { background-color: #F44336; }
   </style>
 </head>
+
 <body>
-  <div class="container">
-    <h1>CVSS v3.1 Base Score Calculator</h1>
-    <p>Enter CVSS vector (e.g. AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H)</p>
+  <h1>CVSS v3.1 Base Score Calculator</h1>
+  <p>Enter CVSS vector (e.g. AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H)</p>
 
-    <input type="text" id="vector" placeholder="AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H">
-    <br>
-    <button onclick="calculate()">Calculate</button>
+  <input type="text" id="vector" placeholder="AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H">
+  <br>
+  <button onclick="calculate()">Calculate</button>
 
-    <div id="result" class="result"></div>
-  </div>
+  <div id="result" class="result"></div>
 
-  <script type="module">
-    import { calcBaseScore } from "./src/cvss.js";
-
+  <!-- Load calculator logic -->
+  <script src="./src/cvss.js"></script>
+  <script>
     function parseVector(vector) {
       const metrics = {};
       vector.split("/").forEach(part => {
@@ -91,19 +80,19 @@
       return ["Critical", "critical"];
     }
 
-    window.calculate = function () {
+    function calculate() {
       const vector = document.getElementById("vector").value.trim();
       if (!vector) return alert("Please enter a CVSS vector string");
 
       const metrics = parseVector(vector);
-      const result = calcBaseScore(metrics);
+      const result = window.calcBaseScore(metrics);
       const score = result.base.toFixed(1);
       const [severity, cssClass] = getSeverity(result.base);
 
       const resultDiv = document.getElementById("result");
       resultDiv.textContent = `${severity} (${score})`;
       resultDiv.className = `result ${cssClass}`;
-    };
+    }
   </script>
 </body>
 </html>

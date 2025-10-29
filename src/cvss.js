@@ -50,3 +50,4 @@ function calcBaseScore(metrics) {
 
 // Step 4: Export function so we can use it in tests
 module.exports = { calcBaseScore };
+window.calcBaseScore = calcBaseScore;
