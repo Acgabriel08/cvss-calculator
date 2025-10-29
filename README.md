@@ -29,3 +29,14 @@ It allows security analysts, students, and developers to quickly calculate **vul
 1. Clone this repository:
    ```bash
    git clone https://github.com/Acgabriel08/cvss-calculator.git
+   ---
+
+## 👤 Author
+
+**Gabriel Akachukwu Emenike**  
+GitHub: [@Acgabriel08](https://github.com/Acgabriel08)  
+Email: gemenike08@gmail.com 
+ LinkedIn: [Gabriel Akachukwu Emenike](https://uk.linkedin.com/in/gabriel-emenike-bb247b38a)
+Cybersecurity Enthusiast | Developer | Researcher  
+
+---
