@@ -1,98 +1,196 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CVSS v3.1 Calculator</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f5f8fb;
-      text-align: center;
-      margin-top: 80px;
-    }
-    h1 {
-      color: #003366;
-    }
-    input {
-      width: 70%;
-      padding: 10px;
-      margin-top: 20px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
-    button {
-      margin-top: 20px;
-      background-color: #003366;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-size: 1em;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0055aa;
-    }
-    .result {
-      margin-top: 30px;
-      font-size: 1.6em;
-      font-weight: bold;
-      display: inline-block;
-      padding: 15px;
-      border-radius: 10px;
-      color: white;
-    }
-    .low { background-color: #4CAF50; }
-    .medium { background-color: #FFC107; color: black; }
-    .high { background-color: #FF9800; }
-    .critical { background-color: #F44336; }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>CVSS v3.1 Base Score Calculator — Professional Variant</title>
+<style>
+  body { font-family: system-ui, Segoe UI, Roboto, Arial; margin: 18px; max-width: 900px; }
+  h1 { font-size: 20px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 12px; }
+  label { display: block; margin-bottom: 6px; font-weight: 600; }
+  select, input[type=button] { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc; font-weight: 500; }
+  input[type=button] { cursor: pointer; background-color: #1976D2; color: #fff; border: none; transition: background 0.3s; }
+  input[type=button]:hover { background-color: #1565C0; }
+  .result { padding: 12px; border-radius: 6px; background: #f3f4f6; margin-top: 12px; }
+  footer { margin-top: 24px; font-size: 13px; color: #666; }
+  .code { font-family: monospace; background: #fff; padding: 8px; border-radius: 6px; border: 1px solid #eee; display: inline-block; }
+
+  /* Badge styling */
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    margin-left: 8px;
+    min-width: 36px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    background: linear-gradient(145deg, rgba(0,0,0,0.05), rgba(0,0,0,0.0));
+  }
+
+  .status-N { background-color: #6c757d; }    /* Gray for None */
+  .status-L { background-color: #2E7D32; }    /* Dark Green for Low */
+  .status-H { background-color: #C62828; }    /* Dark Red for High */
+  .status-U { background-color: #1565C0; }    /* Dark Blue for Scope Unchanged */
+  .status-C { background-color: #F9A825; color: #000; } /* Dark Yellow for Scope Changed */
+</style>
 </head>
-
 <body>
-  <h1>CVSS v3.1 Base Score Calculator</h1>
-  <p>Enter CVSS vector (e.g. AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H)</p>
+<h1>CVSS v3.1 Base Score Calculator — Professional Variant</h1>
+<p>Pick CVSS base metrics below and click <strong>Calculate</strong>. This implements the CVSS v3.1 base score formula.</p>
 
-  <input type="text" id="vector" placeholder="AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H">
-  <br>
-  <button onclick="calculate()">Calculate</button>
+<div class="grid">
+  <div>
+    <label>Attack Vector (AV) <span id="AV-badge" class="badge status-N">N</span></label>
+    <select id="AV">
+      <option value="N">Network (N)</option>
+      <option value="A">Adjacent (A)</option>
+      <option value="L">Local (L)</option>
+      <option value="P">Physical (P)</option>
+    </select>
+  </div>
 
-  <div id="result" class="result"></div>
+  <div>
+    <label>Attack Complexity (AC) <span id="AC-badge" class="badge status-L">L</span></label>
+    <select id="AC">
+      <option value="L">Low (L)</option>
+      <option value="H">High (H)</option>
+    </select>
+  </div>
 
-  <!-- Load calculator logic -->
-  <script src="./src/cvss.js"></script>
-  <script>
-    function parseVector(vector) {
-      const metrics = {};
-      vector.split("/").forEach(part => {
-        const [key, value] = part.split(":");
-        metrics[key] = value;
-      });
-      return metrics;
-    }
+  <div>
+    <label>Privileges Required (PR) <span id="PR-badge" class="badge status-N">N</span></label>
+    <select id="PR">
+      <option value="N">None (N)</option>
+      <option value="L">Low (L)</option>
+      <option value="H">High (H)</option>
+    </select>
+  </div>
 
-    function getSeverity(score) {
-      if (score === 0.0) return ["None", "low"];
-      if (score <= 3.9) return ["Low", "low"];
-      if (score <= 6.9) return ["Medium", "medium"];
-      if (score <= 8.9) return ["High", "high"];
-      return ["Critical", "critical"];
-    }
+  <div>
+    <label>User Interaction (UI) <span id="UI-badge" class="badge status-N">N</span></label>
+    <select id="UI">
+      <option value="N">None (N)</option>
+      <option value="R">Required (R)</option>
+    </select>
+  </div>
 
-    function calculate() {
-      const vector = document.getElementById("vector").value.trim();
-      if (!vector) return alert("Please enter a CVSS vector string");
+  <div>
+    <label>Scope (S) <span id="S-badge" class="badge status-U">U</span></label>
+    <select id="S">
+      <option value="U">Unchanged (U)</option>
+      <option value="C">Changed (C)</option>
+    </select>
+  </div>
 
-      const metrics = parseVector(vector);
-      const result = window.calcBaseScore(metrics);
-      const score = result.base.toFixed(1);
-      const [severity, cssClass] = getSeverity(result.base);
+  <div>
+    <label>Confidentiality (C) <span id="C-badge" class="badge status-N">N</span></label>
+    <select id="C">
+      <option value="N">None (N)</option>
+      <option value="L">Low (L)</option>
+      <option value="H">High (H)</option>
+    </select>
+  </div>
 
-      const resultDiv = document.getElementById("result");
-      resultDiv.textContent = `${severity} (${score})`;
-      resultDiv.className = `result ${cssClass}`;
-    }
-  </script>
+  <div>
+    <label>Integrity (I) <span id="I-badge" class="badge status-N">N</span></label>
+    <select id="I">
+      <option value="N">None (N)</option>
+      <option value="L">Low (L)</option>
+      <option value="H">High (H)</option>
+    </select>
+  </div>
+
+  <div>
+    <label>Availability (A) <span id="A-badge" class="badge status-N">N</span></label>
+    <select id="A">
+      <option value="N">None (N)</option>
+      <option value="L">Low (L)</option>
+      <option value="H">High (H)</option>
+    </select>
+  </div>
+</div>
+
+<input type="button" id="calc" value="Calculate CVSS Base Score" />
+<div id="output" class="result" style="display:none;"></div>
+
+<script>
+const AV_map = {N:0.85,A:0.62,L:0.55,P:0.2};
+const AC_map = {L:0.77,H:0.44};
+const UI_map = {N:0.85,R:0.62};
+const CIA_map = {N:0.0,L:0.22,H:0.56};
+const PR_map_scopeU = {N:0.85,L:0.62,H:0.27};
+const PR_map_scopeC = {N:0.85,L:0.68,H:0.5};
+
+function roundup1(x){ return Math.ceil(x*10)/10; }
+function calcBaseScore(metrics){
+  const AV=AV_map[metrics.AV],AC=AC_map[metrics.AC],UI=UI_map[metrics.UI],S=metrics.S;
+  const C=CIA_map[metrics.C],I=CIA_map[metrics.I],A=CIA_map[metrics.A];
+  const PRmap=(S==='U')?PR_map_scopeU:PR_map_scopeC;
+  const PR=PRmap[metrics.PR];
+  const impact=1-((1-C)*(1-I)*(1-A));
+  const impactSub=(S==='U')?6.42*impact:7.52*(impact-0.029)-3.25*Math.pow((impact-0.02),15);
+  const exploitability=8.22*AV*AC*PR*UI;
+  if(impact<=0)return {base:0.0,impact,exploitability,impactSub};
+  const base=(S==='U')?roundup1(Math.min(impactSub+exploitability,10)):roundup1(Math.min(1.08*(impactSub+exploitability),10));
+  return {base,impact,exploitability,impactSub};
+}
+
+function getBadgeClass(val){
+  switch(val){
+    case 'N': return 'status-N';
+    case 'L': return 'status-L';
+    case 'H': return 'status-H';
+    case 'U': return 'status-U';
+    case 'C': return 'status-C';
+    case 'R': return 'status-H';
+    case 'A': return 'status-L';
+    case 'P': return 'status-N';
+    default: return '';
+  }
+}
+
+function updateBadgeAndSelectColor(selectId,badgeId){
+  const select=document.getElementById(selectId);
+  const badge=document.getElementById(badgeId);
+  const val=select.value;
+  badge.textContent=val;
+  badge.className='badge '+getBadgeClass(val);
+  select.style.color=getComputedStyle(badge).backgroundColor;
+}
+
+['AV','AC','PR','UI','S','C','I','A'].forEach(id=>{
+  updateBadgeAndSelectColor(id,id+'-badge');
+  document.getElementById(id).addEventListener('change',()=>updateBadgeAndSelectColor(id,id+'-badge'));
+});
+
+document.getElementById('calc').addEventListener('click',()=>{
+  const metrics={
+    AV: document.getElementById('AV').value,
+    AC: document.getElementById('AC').value,
+    PR: document.getElementById('PR').value,
+    UI: document.getElementById('UI').value,
+    S: document.getElementById('S').value,
+    C: document.getElementById('C').value,
+    I: document.getElementById('I').value,
+    A: document.getElementById('A').value
+  };
+  const res=calcBaseScore(metrics);
+  const out=document.getElementById('output');
+  out.style.display='block';
+  out.innerHTML=`<strong>CVSS v3.1 Base Score:</strong> <span class="code">${res.base.toFixed(1)}</span><br/>
+    <strong>Impact:</strong> ${res.impact.toFixed(4)} |
+    <strong>Impact Subscore:</strong> ${res.impactSub.toFixed(4)} |
+    <strong>Exploitability:</strong> ${res.exploitability.toFixed(4)}<br/>
+    <small>Metrics: AV=${metrics.AV}, AC=${metrics.AC}, PR=${metrics.PR}, UI=${metrics.UI}, S=${metrics.S}, C=${metrics.C}, I=${metrics.I}, A=${metrics.A}</small>`;
+});
+</script>
+
+<footer>
+<p>Implements CVSS v3.1 base score formula (impact/exploitability). Professional variant for lab use. Reference: NIST CVSS v3.1 spec.</p>
+</footer>
 </body>
 </html>
